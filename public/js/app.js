@@ -39935,8 +39935,8 @@ var render = function() {
                           staticClass: "img-responsive",
                           attrs: {
                             src: "img/producto/" + producto.imagen,
-                            width: "50px",
-                            height: "50px"
+                            width: "35px",
+                            height: "35px"
                           }
                         })
                       ]),
@@ -48645,7 +48645,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       var me = this;
       //Actualiza  la pagina actual
       me.pagination.current_page = page;
-      me.listarCompra(page, buscar, criterio);
+      me.listarVenta(page, buscar, criterio);
     },
     encuentra: function encuentra(id) {
       var sw = 0;
@@ -49617,7 +49617,7 @@ exports = module.exports = __webpack_require__(2)(false);
 
 
 // module
-exports.push([module.i, "\n.modal-content{\n  width : 100% !important;\n  position : absolute !important;\n}\n.mostrar{\n  display : list-item !important;\n  opacity : 1 !important;\n  position : absolute !important;\n  background-color : #3c29297a !important;\n}\n.div-error{\n  display : flex;\n  justify-content : center;\n}\n.text-error{\n  color : red !important;\n  font-weight : bold;\n  font-size : 20px;\n}\n\n\n", ""]);
+exports.push([module.i, "\n.modal-content{\n  width : 100% !important;\n  position : absolute !important;\n}\n.mostrar{\n  display : list-item !important;\n  opacity : 1 !important;\n  position : absolute !important;\n  background-color : #3c29297a !important;\n}\n.encabezado{\n  display : list-item !important;\n  opacity : 1 !important;\n  position : absolute !important;\n  background-color : #3c29297a !important;\n}\n.div-error{\n  display : flex;\n  justify-content : center;\n}\n.text-error{\n  color : red !important;\n  font-weight : bold;\n  font-size : 20px;\n}\n\n\n", ""]);
 
 // exports
 
@@ -49906,27 +49906,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
 
 
@@ -49941,9 +49920,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
   data: function data() {
     return {
       venta_id: 0,
-      idcliente: 0,
-      cliente: '',
-      tipo_identificacion: 'FACTURA',
+      idcliente: 1,
+      cliente: 'Tienda Local',
+      tipo_identificacion: 'BOLETA',
       num_venta: '',
       impuesto: 0.19,
       total: 0.0,
@@ -49954,6 +49933,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       arrayDetalle: [],
       listado: 1,
       modal: 1,
+      encabezado: 0,
       tituloModal: 'Ingresar productos',
       tipoAccion: 0,
       errorVenta: 0,
@@ -49985,7 +49965,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
   components: {
     vSelect: __WEBPACK_IMPORTED_MODULE_0_vue_select___default.a
   },
-
   computed: {
     isActived: function isActived() {
       return this.pagination.current_page;
@@ -50018,15 +49997,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       return resultado;
     }
   },
-
   methods: {
-    listarVenta: function listarVenta(page, buscar, criterio) {
+    buscarProximaVenta: function buscarProximaVenta(tipo) {
       var me = this;
-      var url = '/venta?page=' + page + '&buscar=' + buscar + '&criterio=' + criterio;
+      var url = '/venta/obtenerNumero?tipo=' + tipo;
       axios.get(url).then(function (response) {
         var respuesta = response.data;
-        me.arrayVenta = respuesta.ventas.data;
-        me.pagination = respuesta.pagination;
+        me.num_venta = respuesta.numero; //me.arrayVenta = respuesta.ventas.data;
       }).catch(function (error) {
         console.log(error);
       });
@@ -50127,13 +50104,16 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
               });
               me.cantidad = me.stock;
             } else {
-              me.arrayDetalle.push({
-                idproducto: me.idproducto,
-                producto: me.producto,
-                cantidad: me.cantidad,
-                precio: me.precio,
-                stock: me.stock
-              });
+
+              if (me.encuentra(me.idproducto, me.cantidad)) {} else {
+                me.arrayDetalle.push({
+                  idproducto: me.idproducto,
+                  producto: me.producto,
+                  cantidad: me.cantidad,
+                  precio: me.precio,
+                  stock: me.stock
+                });
+              }
               me.codigo = "";
               me.idproducto = 0;
               me.producto = "";
@@ -50192,16 +50172,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       //alert(window.location.host);
       window.open('http://tienda.dyi.cl/venta/pdf/' + id + ',' + '_blank');
     },
-    cambiarPagina: function cambiarPagina(page, buscar, criterio) {
-      var me = this;
-      //Actualiza  la pagina actual
-      me.pagination.current_page = page;
-      me.listarCompra(page, buscar, criterio);
-    },
-    encuentra: function encuentra(id) {
+    encuentra: function encuentra(id, cantidad) {
       var sw = 0;
       for (var i = 0; i < this.arrayDetalle.length; i++) {
         if (this.arrayDetalle[i].idproducto == id) {
+          this.arrayDetalle[i].cantidad = this.arrayDetalle[i].cantidad + cantidad;
           sw = true;
         }
       }
@@ -50211,44 +50186,45 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       var me = this;
       me.arrayDetalle.splice(index, 1);
     },
-    agregarDetalleModal: function agregarDetalleModal() {
-      var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [];
 
-      var swalWithBootstrapButtons = Swal.mixin({
+    /*agregarDetalleModal( data=[] ){
+      const swalWithBootstrapButtons = Swal.mixin({
         customClass: {
           confirmButton: 'btn btn-success',
           cancelButton: 'btn btn-danger'
         },
         buttonsStyling: false
-      });
-      var me = this;
-      if (me.encuentra(data['id'])) {
+      })
+      let me=this;
+      if(me.encuentra(data['id'])){
         swalWithBootstrapButtons.fire({
           type: 'error',
           title: 'Error...',
-          text: 'Ese producto ya fue agregado'
-        });
+          text: 'Ese producto ya fue agregado',
+        })
       } else {
         me.arrayDetalle.push({
-          idproducto: data['id'],
-          producto: data['nombre'],
-          cantidad: 1,
-          precio: data['precio_venta'],
-          descuento: 0,
-          stock: data['stock']
-        });
+            idproducto: data['id'],
+            producto: data['nombre'],
+            cantidad: 1,
+            precio: data['precio_venta'],
+            descuento:0,
+            stock:data['stock']
+        }); 
       }
     },
-    listarProducto: function listarProducto(buscar, criterio) {
-      var me = this;
-      var url = '/producto/listarProductoVenta?buscar=' + buscar + '&criterio=' + criterio;
+    listarProducto(buscar, criterio){
+      let me=this;
+      var url= '/producto/listarProductoVenta?buscar='+ buscar + '&criterio='+ criterio;
       axios.get(url).then(function (response) {
-        var respuesta = response.data;
+        var respuesta= response.data;
         me.arrayProducto = respuesta.productos.data;
-      }).catch(function (error) {
+      })
+      .catch(function (error) {
         console.log(error);
       });
-    },
+    },*/
+
     registrarVenta: function registrarVenta() {
       if (this.validarVenta()) {
         return;
@@ -50263,7 +50239,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         'data': this.arrayDetalle
       }).then(function (response) {
         me.listado = 1;
-        me.listarVenta(1, '', 'num_venta');
         me.idcliente = 0;
         me.tipo_identificacion = 'FACTURA';
         me.num_venta = '';
@@ -50295,7 +50270,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       if (me.idcliente == 0) me.errorMostrarMsjVenta.push("Seleccione un Cliente");
       if (me.tipo_identificacion == 0) me.errorMostrarMsjVenta.push("Seleccione la identificación");
       if (!me.num_venta) me.errorMostrarMsjVenta.push("Ingrese el número de venta");
-      //if( !me.impuesto ) me.errorMostrarMsjVenta.push("Ingrese el impuesto de venta");
       if (me.arrayDetalle.length <= 0) me.errorMostrarMsjVenta.push("Ingrese detalles");
       if (me.errorMostrarMsjVenta.length) me.errorVenta = 1;
       return me.errorVenta;
@@ -50314,37 +50288,44 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       me.precio = 0;
       me.arrayDetalle = [];
     },
-    ocultarDetalle: function ocultarDetalle() {
-      this.listado = 1;
-    },
-    verVenta: function verVenta(id) {
-      var me = this;
-      me.listado = 2;
-      var arrayVentaT = [];
-      var url = '/venta/obtenerCabecera?id=' + id;
-      axios.get(url).then(function (response) {
-        var respuesta = response.data;
-        arrayVentaT = respuesta.venta;
-        me.cliente = arrayVentaT[0]['nombre'];
-        me.tipo_identificacion = arrayVentaT[0]['tipo_identificacion'];
-        me.num_venta = arrayVentaT[0]['num_venta'];
-        me.impuesto = arrayVentaT[0]['impuesto'];
-        me.total = arrayVentaT[0]['total'];
-      }).catch(function (error) {
-        console.log(error);
-      });
-      var urld = '/venta/obtenerDetalles?id=' + id;
-      axios.get(urld).then(function (response) {
-        console.log(response);
-        var respuesta = response.data;
-        me.arrayDetalle = respuesta.detalles;
-      }).catch(function (error) {
-        console.log(error);
-      });
-    },
+
+    /* ocultarDetalle(){
+       this.listado = 1;
+     },*/
+    /*  verVenta(id){
+        let me = this;
+        me.listado = 2;
+        var arrayVentaT = [];
+        var url = '/venta/obtenerCabecera?id=' + id;
+        axios.get(url).then(function (response) {
+          var respuesta = response.data;
+          arrayVentaT = respuesta.venta;
+          me.cliente = arrayVentaT[0]['nombre'];
+          me.tipo_identificacion = arrayVentaT[0]['tipo_identificacion'];
+          me.num_venta = arrayVentaT[0]['num_venta'];
+          me.impuesto = arrayVentaT[0]['impuesto'];
+          me.total = arrayVentaT[0]['total'];
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+        var urld = '/venta/obtenerDetalles?id=' + id;
+        axios.get(urld).then(function (response) {
+          console.log(response);
+          var respuesta = response.data;
+          me.arrayDetalle = respuesta.detalles;
+        })
+        .catch(function (error) {
+          console.log(error);
+        });     
+      },*/
     cerrarModal: function cerrarModal() {
       this.modal = 0;
       this.tituloModal = '';
+    },
+    cerrarEncabezado: function cerrarEncabezado() {
+      this.encabezado = 0;
+      // this.tituloModal = '';
     },
     abrirModal: function abrirModal() {
       var me = this;
@@ -50354,45 +50335,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       me.modal = 1;
       me.$refs.codigo.focus();
     },
-    desactivarVenta: function desactivarVenta(id) {
-      var _this = this;
-
-      var swalWithBootstrapButtons = Swal.mixin({
-        customClass: {
-          confirmButton: 'btn btn-success',
-          cancelButton: 'btn btn-danger'
-        },
-        buttonsStyling: false
-      });
-      swalWithBootstrapButtons.fire({
-        title: 'Esta seguro de anular la venta?',
-        //type: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: '<i class="fa fa-check fa-2x"></i> Aceptar!',
-        cancelButtonText: '<i class="fa fa-times fa-2x"></i> Cancelar',
-        confirmButtonClass: 'btn btn-success',
-        cancelButtonClass: 'btn btn-danger',
-        buttonsStyling: false,
-        reverseButtons: true
-      }).then(function (result) {
-        if (result.value) {
-          var me = _this;
-          axios.put('/venta/desactivar', {
-            'id': id
-          }).then(function (response) {
-            me.listarVenta(1, '', 'num_venta');
-            swalWithBootstrapButtons.fire('Anulado!', 'La venta ha sido anulada con éxito.', 'success');
-          }).catch(function (error) {
-            console.log(error);
-          });
-        } else if (result.dismiss === swal.DismissReason.cancel) {}
-      });
+    abrirEncabezado: function abrirEncabezado() {
+      var me = this;
+      //  me.tituloModal = 'Datos de la Venta';
+      // me.codigo = "";
+      me.encabezado = 1;
     }
   },
   mounted: function mounted() {
-    this.listarVenta(1, this.buscar, this.criterio);
+    this.buscarProximaVenta(this.tipo_identificacion);
   }
 });
 
@@ -50410,7 +50361,22 @@ var render = function() {
       _vm._v(" "),
       _c("ol", { staticClass: "breadcrumb" }, [
         _c("div", { staticClass: "pull-right" }, [
-          _vm._m(1),
+          _c(
+            "button",
+            {
+              staticClass: "btn btn-primary",
+              attrs: { type: "button" },
+              on: {
+                click: function($event) {
+                  return _vm.abrirEncabezado()
+                }
+              }
+            },
+            [
+              _c("i", { staticClass: "fa fa-fw fa-cog" }),
+              _vm._v(" Datos de Venta\n        ")
+            ]
+          ),
           _vm._v(" "),
           _c(
             "button",
@@ -50434,7 +50400,7 @@ var render = function() {
     _vm._v(" "),
     _c("section", { staticClass: "content" }, [
       _c("div", { staticClass: "box" }, [
-        _vm._m(2),
+        _vm._m(1),
         _vm._v(" "),
         _c("div", { staticClass: "box-body" }, [
           _c("div", { staticClass: "form-group row border" }),
@@ -50477,7 +50443,7 @@ var render = function() {
             "table",
             { staticClass: "table table-bordered table-striped table-sm" },
             [
-              _vm._m(3),
+              _vm._m(2),
               _vm._v(" "),
               _vm.arrayDetalle.length
                 ? _c(
@@ -50584,7 +50550,7 @@ var render = function() {
                       }),
                       _vm._v(" "),
                       _c("tr", [
-                        _vm._m(4),
+                        _vm._m(3),
                         _vm._v(" "),
                         _c("td", [
                           _c("strong", [
@@ -50601,7 +50567,7 @@ var render = function() {
                       ]),
                       _vm._v(" "),
                       _c("tr", [
-                        _vm._m(5),
+                        _vm._m(4),
                         _vm._v(" "),
                         _c("td", [
                           _c("strong", [
@@ -50619,7 +50585,7 @@ var render = function() {
                       ]),
                       _vm._v(" "),
                       _c("tr", [
-                        _vm._m(6),
+                        _vm._m(5),
                         _vm._v(" "),
                         _c("td", [
                           _c("strong", [
@@ -50632,7 +50598,7 @@ var render = function() {
                     ],
                     2
                   )
-                : _c("tbody", [_vm._m(7)])
+                : _c("tbody", [_vm._m(6)])
             ]
           )
         ]),
@@ -50655,7 +50621,7 @@ var render = function() {
             ]
           ),
           _vm._v(" "),
-          _vm._m(8),
+          _vm._m(7),
           _c("br")
         ])
       ])
@@ -50821,49 +50787,232 @@ var render = function() {
                 }
               },
               [_c("i", { staticClass: "fa fa-fw fa-times" }), _vm._v(" Cerrar")]
-            ),
-            _vm._v(" "),
-            _vm.tipoAccion == 1
-              ? _c(
-                  "button",
-                  {
-                    staticClass: "btn btn-success",
-                    attrs: { type: "button" },
-                    on: {
-                      click: function($event) {
-                        return _vm.registrarCategoria()
-                      }
-                    }
-                  },
-                  [
-                    _c("i", { staticClass: "fa fa-fw fa-save" }),
-                    _vm._v(" Guardar")
-                  ]
-                )
-              : _vm._e(),
-            _vm._v(" "),
-            _vm.tipoAccion == 2
-              ? _c(
-                  "button",
-                  {
-                    staticClass: "btn btn-primary",
-                    attrs: { type: "button" },
-                    on: {
-                      click: function($event) {
-                        return _vm.actualizarCategoria()
-                      }
-                    }
-                  },
-                  [
-                    _c("i", { staticClass: "fa fa-fw fa-pencil" }),
-                    _vm._v(" Actualizar")
-                  ]
-                )
-              : _vm._e()
+            )
           ])
         ])
       ])
-    ])
+    ]),
+    _vm._v(" "),
+    _c(
+      "div",
+      { staticClass: "modal fade", class: { encabezado: _vm.encabezado } },
+      [
+        _c("div", { staticClass: "modal-dialog" }, [
+          _c("div", { staticClass: "modal-content" }, [
+            _c("div", { staticClass: "modal-header" }, [
+              _c(
+                "button",
+                {
+                  staticClass: "close",
+                  attrs: {
+                    type: "button",
+                    "data-dismiss": "modal",
+                    "aria-label": "Close"
+                  },
+                  on: {
+                    click: function($event) {
+                      return _vm.cerrarEncabezado()
+                    }
+                  }
+                },
+                [
+                  _c("span", { attrs: { "aria-hidden": "true" } }, [
+                    _vm._v("×")
+                  ])
+                ]
+              ),
+              _vm._v(" "),
+              _c("h4", { staticClass: "modal-title" }, [
+                _vm._v("Encabezado de la Venta")
+              ])
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "modal-body" }, [
+              _c("div", { staticClass: "form-group row" }, [
+                _c(
+                  "label",
+                  {
+                    staticClass: "col-md-3 form-control-label",
+                    attrs: { for: "producto-input" }
+                  },
+                  [_vm._v("Cliente(*)")]
+                ),
+                _vm._v(" "),
+                _c(
+                  "div",
+                  { staticClass: "col-md-4" },
+                  [
+                    _c("v-select", {
+                      attrs: {
+                        label: "nombre",
+                        options: _vm.arrayCliente,
+                        placeholder: "Buscar Clientes..."
+                      },
+                      on: {
+                        search: _vm.selectCliente,
+                        input: _vm.getDatosCliente
+                      }
+                    })
+                  ],
+                  1
+                ),
+                _vm._v(" "),
+                _c("div", { staticClass: "col-md-5" }, [
+                  _c("p", { domProps: { textContent: _vm._s(_vm.cliente) } })
+                ])
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "form-group row" }, [
+                _c(
+                  "label",
+                  {
+                    staticClass: "col-md-3 form-control-label",
+                    attrs: { for: "producto-input" }
+                  },
+                  [_vm._v("Número Venta(*)")]
+                ),
+                _vm._v(" "),
+                _c("div", { staticClass: "col-md-9" }, [
+                  _c("input", {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.num_venta,
+                        expression: "num_venta"
+                      }
+                    ],
+                    staticClass: "form-control",
+                    attrs: { type: "text" },
+                    domProps: { value: _vm.num_venta },
+                    on: {
+                      input: function($event) {
+                        if ($event.target.composing) {
+                          return
+                        }
+                        _vm.num_venta = $event.target.value
+                      }
+                    }
+                  })
+                ])
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "form-group row" }, [
+                _c(
+                  "label",
+                  {
+                    staticClass: "col-md-3 form-control-label",
+                    attrs: { for: "cantidad-input" }
+                  },
+                  [_vm._v("Tipo Documento")]
+                ),
+                _vm._v(" "),
+                _c("div", { staticClass: "col-md-9" }, [
+                  _c(
+                    "select",
+                    {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.tipo_identificacion,
+                          expression: "tipo_identificacion"
+                        }
+                      ],
+                      staticClass: "form-control",
+                      on: {
+                        change: function($event) {
+                          var $$selectedVal = Array.prototype.filter
+                            .call($event.target.options, function(o) {
+                              return o.selected
+                            })
+                            .map(function(o) {
+                              var val = "_value" in o ? o._value : o.value
+                              return val
+                            })
+                          _vm.tipo_identificacion = $event.target.multiple
+                            ? $$selectedVal
+                            : $$selectedVal[0]
+                        }
+                      }
+                    },
+                    [
+                      _c(
+                        "option",
+                        { attrs: { value: "BOLETA", selected: "" } },
+                        [_vm._v("Boleta")]
+                      ),
+                      _vm._v(" "),
+                      _c("option", { attrs: { value: "FACTURA" } }, [
+                        _vm._v("Factura")
+                      ]),
+                      _vm._v(" "),
+                      _c("option", { attrs: { value: "COMPROBANTE" } }, [
+                        _vm._v("Comprobante")
+                      ])
+                    ]
+                  )
+                ])
+              ]),
+              _vm._v(" "),
+              _c("div", { staticClass: "form-group row" }, [
+                _c(
+                  "label",
+                  {
+                    staticClass: "col-md-3 form-control-label",
+                    attrs: { for: "producto-input" }
+                  },
+                  [_vm._v("Impuesto")]
+                ),
+                _vm._v(" "),
+                _c("div", { staticClass: "col-md-9" }, [
+                  _c("input", {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.impuesto,
+                        expression: "impuesto"
+                      }
+                    ],
+                    staticClass: "form-control",
+                    attrs: { readonly: "", type: "text" },
+                    domProps: { value: _vm.impuesto },
+                    on: {
+                      input: function($event) {
+                        if ($event.target.composing) {
+                          return
+                        }
+                        _vm.impuesto = $event.target.value
+                      }
+                    }
+                  })
+                ])
+              ])
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "modal-footer" }, [
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-danger pull-left",
+                  attrs: { type: "button", "data-dismiss": "modal" },
+                  on: {
+                    click: function($event) {
+                      return _vm.cerrarEncabezado()
+                    }
+                  }
+                },
+                [
+                  _c("i", { staticClass: "fa fa-fw fa-times" }),
+                  _vm._v(" Cerrar")
+                ]
+              )
+            ])
+          ])
+        ])
+      ]
+    )
   ])
 }
 var staticRenderFns = [
@@ -50875,19 +51024,6 @@ var staticRenderFns = [
       _vm._v("\n      Caja\n      "),
       _c("small", [_vm._v("preview of simple tables")])
     ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c(
-      "button",
-      { staticClass: "btn btn-primary", attrs: { type: "button" } },
-      [
-        _c("i", { staticClass: "fa fa-fw fa-cog" }),
-        _vm._v(" Datos de Venta\n        ")
-      ]
-    )
   },
   function() {
     var _vm = this

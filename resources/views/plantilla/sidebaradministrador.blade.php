@@ -8,10 +8,11 @@
   <li @click="menu=4"><a href="#"><i class="fa fa-link"></i> <span>Proveedores</span></a></li>
   <li @click="menu=5"><a href="#"><i class="fa fa-suitcase"></i> <span>Ventas</span></a></li>  
   <li @click="menu=6"><a href="#"><i class="fa fa-users"></i> <span>Clientes</span></a></li>
-  
   <li @click="menu=7"><a href="#"><i class="fa fa-user"></i> <span>Usuarios</span></a></li>
   <li @click="menu=8"><a href="#"><i class="fa fa-list"></i> <span>Roles</span></a></li>
 </ul>
+
+
 
 <!--<div class="sidebar">
   <nav class="sidebar-nav">

@@ -22,7 +22,7 @@ class VentaController extends Controller
             ->select('ventas.id','ventas.tipo_identificacion',
             'ventas.num_venta','ventas.fecha_venta','ventas.impuesto','ventas.total',
             'ventas.estado','clientes.nombre','users.usuario')
-            ->orderBy('ventas.id', 'desc')->paginate(3);
+            ->orderBy('ventas.id', 'desc')->paginate(10);
         }
         else{
             $ventas = Venta::join('clientes','ventas.idcliente','=','clientes.id')
@@ -31,7 +31,7 @@ class VentaController extends Controller
             'ventas.num_venta','ventas.fecha_venta','ventas.impuesto','ventas.total',
             'ventas.estado','clientes.nombre','users.usuario')
             ->where('ventas.'.$criterio, 'like', '%'. $buscar . '%')
-            ->orderBy('ventas.id', 'desc')->paginate(3);
+            ->orderBy('ventas.id', 'desc')->paginate(10);
         }
          
         return [
@@ -45,6 +45,16 @@ class VentaController extends Controller
             ],
             'ventas' => $ventas
         ];
+    }
+
+    public function obtenerNumero(Request $request){
+        if( !$request->ajax() ) return redirect('/');
+        //dd($request->tipo);
+        $numero = 1;
+        $numero = $numero + Venta::where('tipo_identificacion', $request->tipo )->max('id');
+        //$numero = $numero + DB::select('SELECT MAX(CAST(num_venta AS SIGNED)) FROM ventas');
+        //dd($numero);
+        return ['numero' => $numero];
     }
 
     public function obtenerCabecera(Request $request){
@@ -62,8 +72,7 @@ class VentaController extends Controller
         return ['venta' => $venta];
     }
 
-    public function obtenerDetalles(Request $request)
-    {
+    public function obtenerDetalles(Request $request){
         if( !$request->ajax() ) return redirect('/');
  
         $id = $request->id;
@@ -98,8 +107,7 @@ class VentaController extends Controller
         return $pdf->download('venta-'.$numventa[0]->num_venta.'.pdf');
     }
  
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         if ( !$request->ajax() ) return redirect('/');
         try{
             DB::beginTransaction();
@@ -114,7 +122,8 @@ class VentaController extends Controller
             $venta->total = $request->total;
             $venta->estado = 'Registrado';
             $venta->save(); 
-
+            
+            //dd($request->num_venta);
             $detalles = $request->data;//Array de detalles
  
             foreach($detalles as $ep => $det){
@@ -123,8 +132,9 @@ class VentaController extends Controller
                 $detalle->idproducto = $det['idproducto'];
                 $detalle->cantidad = $det['cantidad'];
                 $detalle->precio = $det['precio'];
-                $detalle->descuento = $det['descuento'];         
+                //$detalle->descuento = $det['descuento'];         
                 $detalle->save();
+                
             }          
             DB::commit();
         } catch (Exception $e){

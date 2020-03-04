@@ -67,7 +67,7 @@
                     <td v-text="'$ '+producto.precio_venta"></td>
                     <td v-text="producto.stock"></td>
                     <td>
-                      <img :src="'img/producto/'+producto.imagen" class="img-responsive" width="50px" height="50px">
+                      <img :src="'img/producto/'+producto.imagen" class="img-responsive" width="35px" height="35px">
                     </td>
                     <td>            
                      <!--<i class="fa fa-fw fa-check" v-if="categoria.condicion"></i>-->

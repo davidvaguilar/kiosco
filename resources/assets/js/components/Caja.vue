@@ -6,8 +6,8 @@
         <small>preview of simple tables</small>
       </h1>
       <ol class="breadcrumb">
-        <div class="pull-right">
-          <button type="button" class="btn btn-primary"><!---CAMBIAR-->
+        <div class="pull-right">  
+          <button @click="abrirEncabezado()" type="button" class="btn btn-primary"><!---CAMBIAR-->
             <i class="fa fa-fw fa-cog"></i> Datos de Venta
           </button>
           <button @click="abrirModal()" type="button" class="btn btn-success"><!---CAMBIAR-->
@@ -124,7 +124,7 @@
               </tr>
             </thead>
             <tbody v-if="arrayDetalle.length">
-              <tr v-for="(detalle,index) in arrayDetalle" :key="detalle.id">
+              <tr v-for="(detalle, index) in arrayDetalle" :key="detalle.id">
                 <td>
                   <button @click="eliminarDetalle(index)" type="button" class="btn btn-danger btn-block">
                     <i class="fa fa-fw fa-times"></i>
@@ -204,8 +204,8 @@
           </div>
           <div class="modal-footer">
             <button @click="cerrarModal()" type="button" class="btn btn-danger pull-left" data-dismiss="modal"><i class="fa fa-fw fa-times"></i> Cerrar</button>
-            <button type="button" @click="registrarCategoria()" v-if="tipoAccion==1" class="btn btn-success"><i class="fa fa-fw fa-save"></i> Guardar</button>
-            <button type="button" @click="actualizarCategoria()" v-if="tipoAccion==2" class="btn btn-primary"><i class="fa fa-fw fa-pencil"></i> Actualizar</button>
+         <!--   <button type="button" @click="registrarCategoria()" v-if="tipoAccion==1" class="btn btn-success"><i class="fa fa-fw fa-save"></i> Guardar</button>
+            <button type="button" @click="actualizarCategoria()" v-if="tipoAccion==2" class="btn btn-primary"><i class="fa fa-fw fa-pencil"></i> Actualizar</button>-->
           </div>
         </div>
         <!-- /.modal-content -->
@@ -214,82 +214,61 @@
     </div>
     <!-- /.modal -->
 
-
-
-
-    <!--Inicio del modal agregar/actualizar
-    <div class="modal fade" :class="{'mostrar':modal}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" style="display: none;" aria-hidden="true">
-      <div class="modal-dialog modal-primary modal-lg" role="document">
+    <div :class="{'encabezado':encabezado}" class="modal fade">
+      <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h4 class="modal-title" v-text="tituloModal"></h4>
-            <button type="button" @click="cerrarModal()" class="close" aria-label="Close">
-              <span aria-hidden="true">×</span>
-            </button>
+            <button @click="cerrarEncabezado()" type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Encabezado de la Venta</h4>
           </div>
           <div class="modal-body">
-
             <div class="form-group row">
-              <div class="col-md-8">
-                <div class="input-group">
-                  <select class="form-control col-md-5" v-model="criterioP">
-                    <option value="nombre">Producto</option>
-                    <option value="codigo">Código</option>
-                  </select>
-                  <input type="text"  @keyup.enter="listarProducto(buscarP,criterioP);" v-model="buscarP" class="form-control" placeholder="Buscar texto">
-                  <button type="submit"  @click="listarProducto(buscarP,criterioP);" class="btn btn-primary"><i class="fa fa-search"></i> Buscar</button>
-                </div>
+              <label class="col-md-3 form-control-label" for="producto-input">Cliente(*)</label>
+              <div class="col-md-4">
+                <v-select
+                    @search="selectCliente"
+                    label="nombre"
+                    :options="arrayCliente"
+                    placeholder="Buscar Clientes..."
+                    @input="getDatosCliente" >
+                </v-select>
+              </div>
+              <div class="col-md-5">
+                <p v-text="cliente"></p>
               </div>
             </div>
-            <div class="table-responsive">
-              <table class="table table-bordered table-striped table-sm text-center">
-                <thead>
-                  <tr class="bg-primary">                    
-                    <th>Categoria</th>
-                    <th>Producto</th>
-                    <th>Codigo</th>
-                    <th>Precio venta</th>
-                    <th>Stock</th>
-                    <th>Imagen</th>
-                    <th>Estado</th>
-                    <th>Acción</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="producto in arrayProducto" :key="producto.id">              
-                    <td v-text="producto.nombre_categoria"></td>
-                    <td v-text="producto.nombre"></td>
-                    <td v-text="producto.codigo"></td>
-                    <td v-text="'$ '+producto.precio_venta"></td>
-                    <td v-text="producto.stock"></td>
-                    <td>
-                      <img :src="'img/producto/'+producto.imagen" class="img-responsive" width="50px" height="50px">
-                    </td>
-                    <td>
-                      <button type="button" class="btn btn-success btn-sm" title="ACTIVO" v-if="producto.condicion">
-                        <i class="fa fa-unlock fa-2x"></i>&nbsp;
-                      </button>
-                      <button type="button" class="btn btn-danger btn-sm" title="DESACTIVADO" v-else>
-                        <i class="fa fa-lock fa-2x"></i>&nbsp;
-                      </button>
-                    </td>
-                    <td>
-                      <button type="button" @click="agregarDetalleModal(producto)" class="btn btn-primary btn-sm">
-                        <i class="fa fa-plus fa-2x"></i> Agregar 
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="form-group row">
+              <label class="col-md-3 form-control-label" for="producto-input">Número Venta(*)</label>
+              <div class="col-md-9">
+                <input v-model="num_venta" type="text" class="form-control"/>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-md-3 form-control-label" for="cantidad-input">Tipo Documento</label>
+              <div class="col-md-9">
+                <select v-model="tipo_identificacion" class="form-control">
+                  <option value="BOLETA" selected>Boleta</option>
+                  <option value="FACTURA">Factura</option>
+                  <option value="COMPROBANTE">Comprobante</option>                       
+                </select>           
+              </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-md-3 form-control-label" for="producto-input">Impuesto</label>
+              <div class="col-md-9">
+                <input v-model="impuesto" readonly type="text" class="form-control"/>
+              </div>
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" @click="cerrarModal()" class="btn btn-danger"><i class="fa fa-times fa-2x"></i> Cerrar</button>
+            <button @click="cerrarEncabezado()" type="button" class="btn btn-danger pull-left" data-dismiss="modal"><i class="fa fa-fw fa-times"></i> Cerrar</button>
           </div>
         </div>
       </div>
     </div>
-    Fin del modal-->
+
+
   </main>
 </template>
 
@@ -307,9 +286,9 @@
     data(){
       return {
         venta_id : 0,
-        idcliente : 0,
-        cliente : '',
-        tipo_identificacion : 'FACTURA',
+        idcliente : 1,
+        cliente : 'Tienda Local',
+        tipo_identificacion : 'BOLETA',
         num_venta : '',
         impuesto : 0.19,
         total : 0.0,
@@ -320,6 +299,7 @@
         arrayDetalle : [],
         listado : 1,
         modal : 1,
+        encabezado : 0,
         tituloModal : 'Ingresar productos',
         tipoAccion : 0,
         errorVenta : 0,
@@ -346,12 +326,10 @@
         descuento : 0,
         stock : 0
       }
-
     },
     components: {
       vSelect
     },
-
     computed:{
       isActived: function(){
         return this.pagination.current_page;
@@ -384,15 +362,13 @@
         return resultado;
       }
     },
-
     methods:{
-      listarVenta(page,buscar,criterio){
+      buscarProximaVenta( tipo ){
         let me = this;
-        var url = '/venta?page=' + page + '&buscar='+ buscar + '&criterio=' + criterio;
+        var url = '/venta/obtenerNumero?tipo=' + tipo;
         axios.get(url).then(function (response) {
           var respuesta = response.data;
-          me.arrayVenta = respuesta.ventas.data;
-          me.pagination = respuesta.pagination;
+          me.num_venta = respuesta.numero;          //me.arrayVenta = respuesta.ventas.data;
         })
         .catch(function (error) {
           console.log(error);
@@ -501,13 +477,17 @@
                 })
                 me.cantidad = me.stock;
               } else {
-                me.arrayDetalle.push({
+
+                if(me.encuentra(me.idproducto, me.cantidad)){
+                } else {
+                  me.arrayDetalle.push({
                     idproducto: me.idproducto,
                     producto: me.producto,
                     cantidad: me.cantidad,
                     precio: me.precio,
                     stock: me.stock
-                });
+                  });
+                }            
                 me.codigo = "";
                 me.idproducto = 0;
                 me.producto = "";
@@ -566,23 +546,15 @@
       },
 
 
-
-
       pdfVenta(id){
         //alert(window.location.host);
         window.open('http://tienda.dyi.cl/venta/pdf/'+id+','+ '_blank');
       },
-
-      cambiarPagina(page, buscar, criterio){     
-        let me = this;
-        //Actualiza  la pagina actual
-        me.pagination.current_page = page;
-        me.listarCompra(page,buscar,criterio);
-      },
-      encuentra( id ){
+      encuentra( id, cantidad ){        
         var sw = 0;
         for( var i=0; i < this.arrayDetalle.length; i++){
           if( this.arrayDetalle[i].idproducto == id ){
+            this.arrayDetalle[i].cantidad = this.arrayDetalle[i].cantidad + cantidad;
             sw = true;
           }
         }
@@ -592,11 +564,7 @@
         let me = this;
         me.arrayDetalle.splice(index, 1);
       },
-
-      
-
-
-      agregarDetalleModal( data=[] ){
+      /*agregarDetalleModal( data=[] ){
         const swalWithBootstrapButtons = Swal.mixin({
           customClass: {
             confirmButton: 'btn btn-success',
@@ -622,8 +590,6 @@
           }); 
         }
       },
-
-
       listarProducto(buscar, criterio){
         let me=this;
         var url= '/producto/listarProductoVenta?buscar='+ buscar + '&criterio='+ criterio;
@@ -634,7 +600,7 @@
         .catch(function (error) {
           console.log(error);
         });
-      },
+      },*/
 
       registrarVenta(){
         if(this.validarVenta()){
@@ -650,7 +616,6 @@
           'data': this.arrayDetalle
         }).then(function (response) {
           me.listado = 1;
-          me.listarVenta(1, '', 'num_venta');
           me.idcliente = 0;
           me.tipo_identificacion = 'FACTURA';
           me.num_venta = '';
@@ -683,7 +648,6 @@
         if( me.idcliente == 0 ) me.errorMostrarMsjVenta.push("Seleccione un Cliente");
         if( me.tipo_identificacion == 0 ) me.errorMostrarMsjVenta.push("Seleccione la identificación");
         if( !me.num_venta ) me.errorMostrarMsjVenta.push("Ingrese el número de venta");
-        //if( !me.impuesto ) me.errorMostrarMsjVenta.push("Ingrese el impuesto de venta");
         if( me.arrayDetalle.length <= 0 ) me.errorMostrarMsjVenta.push("Ingrese detalles");
         if( me.errorMostrarMsjVenta.length ) me.errorVenta = 1;
         return me.errorVenta;
@@ -702,10 +666,10 @@
         me.precio = 0;
         me.arrayDetalle = [];
       },
-      ocultarDetalle(){
+     /* ocultarDetalle(){
         this.listado = 1;
-      },
-      verVenta(id){
+      },*/
+    /*  verVenta(id){
         let me = this;
         me.listado = 2;
         var arrayVentaT = [];
@@ -731,10 +695,14 @@
         .catch(function (error) {
           console.log(error);
         });     
-      },
+      },*/
       cerrarModal(){
         this.modal = 0;
         this.tituloModal = '';
+      },
+      cerrarEncabezado(){
+        this.encabezado = 0;
+       // this.tituloModal = '';
       },
       abrirModal(){    
         let me = this;    
@@ -744,50 +712,15 @@
         me.modal = 1;
         me.$refs.codigo.focus();                      
       },
-      desactivarVenta(id){
-        const swalWithBootstrapButtons = Swal.mixin({
-          customClass: {
-            confirmButton: 'btn btn-success',
-            cancelButton: 'btn btn-danger'
-          },
-          buttonsStyling: false
-        })
-        swalWithBootstrapButtons.fire({
-          title: 'Esta seguro de anular la venta?',
-          //type: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: '#3085d6',
-          cancelButtonColor: '#d33',
-          confirmButtonText: '<i class="fa fa-check fa-2x"></i> Aceptar!',
-          cancelButtonText: '<i class="fa fa-times fa-2x"></i> Cancelar',
-          confirmButtonClass: 'btn btn-success',
-          cancelButtonClass: 'btn btn-danger',
-          buttonsStyling: false,
-          reverseButtons: true
-        }).then((result) => {
-          if (result.value) {
-            let me = this;
-            axios.put('/venta/desactivar',{
-                'id': id
-            }).then(function (response) {
-              me.listarVenta(1,'','num_venta');
-              swalWithBootstrapButtons.fire(
-                'Anulado!',
-                'La venta ha sido anulada con éxito.',
-                'success'
-              )
-            }).catch(function (error) {
-                console.log(error);
-            });
-          } else if (
-            result.dismiss === swal.DismissReason.cancel
-          ) {     
-          }
-        }) 
+      abrirEncabezado(){    
+        let me = this;    
+      //  me.tituloModal = 'Datos de la Venta';
+      // me.codigo = "";
+        me.encabezado = 1;                    
       },
     },
     mounted() {
-      this.listarVenta(1, this.buscar, this.criterio);
+      this.buscarProximaVenta( this.tipo_identificacion );
     }
   }
 </script>
@@ -799,6 +732,12 @@
   }
 
   .mostrar{
+    display : list-item !important;
+    opacity : 1 !important;
+    position : absolute !important;
+    background-color : #3c29297a !important;
+  }
+  .encabezado{
     display : list-item !important;
     opacity : 1 !important;
     position : absolute !important;

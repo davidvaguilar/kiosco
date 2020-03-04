@@ -316,7 +316,7 @@
         let me = this;
         //Actualiza  la pagina actual
         me.pagination.current_page = page;
-        me.listarCompra(page,buscar,criterio);
+        me.listarVenta(page,buscar,criterio);
       },
 
 
